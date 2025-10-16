@@ -14,12 +14,12 @@ export interface Candle {
 /**
  * Generate mock forex data for development and testing
  */
-function generateMockForexData(symbol: string): Candle[] {
+function generateMockForexData(symbol: string, outputsize: number = 30): Candle[] {
   const data: Candle[] = [];
   const basePrice = symbol.includes("JPY") ? 110.0 : 1.0;
   const variance = basePrice * 0.01;
   
-  for (let i = 30; i >= 0; i--) {
+  for (let i = outputsize - 1; i >= 0; i--) {
     const date = new Date();
     date.setDate(date.getDate() - i);
     
@@ -65,6 +65,7 @@ interface TwelveDataResponse {
  * @param symbol - The forex pair symbol (e.g., "EUR/USD")
  * @param interval - The time interval (e.g., "1day", "4h", "1h")
  * @param apiKey - The Twelve Data API key
+ * @param outputsize - Number of data points to return
  * @param useMockData - Force use of mock data (for development/testing)
  * @returns Array of formatted candle data
  */
@@ -72,17 +73,18 @@ export async function fetchForexData(
   symbol: string,
   interval: string = "1day",
   apiKey: string,
+  outputsize: number = 30,
   useMockData: boolean = false
 ): Promise<Candle[]> {
   // Use mock data if explicitly requested or if API key is demo/test
   if (useMockData || apiKey.includes("demo") || apiKey.includes("test")) {
-    console.log(`Using mock data for ${symbol}`);
-    return generateMockForexData(symbol);
+    console.log(`Using mock data for ${symbol} with ${outputsize} data points`);
+    return generateMockForexData(symbol, outputsize);
   }
 
   const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(
     symbol
-  )}&interval=${interval}&apikey=${apiKey}&outputsize=30`;
+  )}&interval=${interval}&apikey=${apiKey}&outputsize=${outputsize}`;
 
   try {
     const response = await fetch(url, {
@@ -114,7 +116,7 @@ export async function fetchForexData(
   } catch (error) {
     console.error("Error fetching forex data from API, falling back to mock data:", error);
     // Fallback to mock data if API fails
-    return generateMockForexData(symbol);
+    return generateMockForexData(symbol, outputsize);
   }
 }
 
