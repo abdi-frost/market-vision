@@ -27,18 +27,24 @@ A Next.js TypeScript web application that analyzes financial market data (candle
 src/
 ├── app/                 # Next.js app router pages
 │   ├── api/            # API routes
+│   │   ├── fetch-data/ # Legacy market data API
+│   │   └── forex/      # Twelve Data forex API proxy
 │   ├── analyze/        # Analysis page
 │   ├── layout.tsx      # Root layout
-│   └── page.tsx        # Home page
+│   └── page.tsx        # Home page (forex landing)
 ├── components/          # Reusable UI components
 │   ├── ui/             # shadcn/ui components
-│   ├── Chart.tsx       # Chart component
+│   ├── Chart.tsx       # Legacy chart component
+│   ├── ForexChart.tsx  # Forex OHLC chart
+│   ├── ForexCard.tsx   # Forex pair card
+│   ├── PredictionCard.tsx # Prediction display
 │   ├── Navbar.tsx      # Navigation bar
 │   └── Footer.tsx      # Footer component
 ├── lib/                # Utilities and helpers
 │   └── utils.ts        # Utility functions
 ├── services/           # API services
-│   └── marketData.ts   # Market data fetching
+│   ├── marketData.ts   # Legacy market data
+│   └── twelveData.ts   # Twelve Data API integration
 └── algorithms/         # Prediction algorithms
     └── predictNextDay.ts # Market prediction logic
 ```
@@ -49,6 +55,7 @@ src/
 
 - Node.js 18.x or later
 - npm or yarn
+- (Optional) Twelve Data API key for live forex data
 
 ### Installation
 
@@ -63,12 +70,26 @@ cd market-vision
 npm install
 ```
 
-3. Run the development server:
+3. Set up environment variables (optional for live data):
+```bash
+cp .env.local.example .env.local
+```
+
+Then edit `.env.local` and add your Twelve Data API key:
+```
+TWELVE_API_KEY=your_api_key_here
+```
+
+Get a free API key from [Twelve Data](https://twelvedata.com).
+
+**Note:** The app works with mock data by default, so you can skip this step for development.
+
+4. Run the development server:
 ```bash
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 📝 Available Scripts
 
@@ -81,10 +102,11 @@ npm run dev
 ## 🎨 Pages
 
 ### Home (`/`)
-- Market summary with latest OHLC data
-- Next day prediction (Bullish/Bearish)
-- Confidence score
-- Last 7 days chart preview
+- **Forex pair selection**: Choose from 7 major forex pairs (EUR/USD, GBP/USD, etc.)
+- **Real-time charts**: 30-day OHLC data visualization
+- **Next day prediction**: Bullish/Bearish trend prediction with confidence score
+- **OHLC summary**: Current Open, High, Low, Close values
+- **Interactive cards**: Click any forex pair to update the chart and analysis
 
 ### Analyze (`/analyze`)
 - Full OHLC data visualization
@@ -94,6 +116,32 @@ npm run dev
 - Comprehensive algorithmic analysis
 
 ## 🔌 API Routes
+
+### `/api/forex`
+Fetches forex OHLC data from Twelve Data API (or mock data for development).
+
+**Query Parameters:**
+- `symbol` (optional): Forex pair symbol (default: "EUR/USD")
+- `interval` (optional): Time interval (default: "1day")
+
+**Response:**
+```json
+{
+  "success": true,
+  "symbol": "EUR/USD",
+  "interval": "1day",
+  "data": [
+    {
+      "datetime": "2024-10-16",
+      "open": 1.0950,
+      "high": 1.0975,
+      "low": 1.0920,
+      "close": 1.0965
+    }
+  ],
+  "usingMockData": false
+}
+```
 
 ### `/api/fetch-data`
 Fetches OHLC market data for a given symbol.
@@ -128,11 +176,12 @@ Confidence is calculated based on price movement within the day's range.
 
 ## 🔮 Future Enhancements
 
-- [ ] Integrate live API data (Twelve Data, Alpha Vantage, Finnhub)
-- [ ] Add configurable timeframes (1D, 4H, 1H)
+- [x] Integrate live API data (Twelve Data)
+- [ ] Add configurable timeframes (1D, 4H, 1H) switcher UI
+- [ ] Replace mock predictions with advanced algorithmic models
 - [ ] Implement advanced technical indicators (RSI, MACD, Moving Averages)
 - [ ] Add candlestick pattern recognition
-- [ ] Include local storage or database for historical data
+- [ ] Include data caching to reduce API calls
 - [ ] Implement user authentication for personalized settings
 - [ ] Add more sophisticated machine learning models
 
