@@ -24,16 +24,17 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [usingMockData, setUsingMockData] = useState(false);
+  const [interval, setInterval] = useState<string>("1day");
 
   useEffect(() => {
-    fetchForexData(selectedPair);
-  }, [selectedPair]);
+    fetchForexData(selectedPair, interval);
+  }, [selectedPair, interval]);
 
-  const fetchForexData = async (symbol: string) => {
+  const fetchForexData = async (symbol: string, timeInterval: string) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/forex?symbol=${encodeURIComponent(symbol)}`);
+      const response = await fetch(`/api/forex?symbol=${encodeURIComponent(symbol)}&interval=${timeInterval}`);
       const result = await response.json();
       if (result.success) {
         setData(result.data);
@@ -47,6 +48,10 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleIntervalChange = (newInterval: string) => {
+    setInterval(newInterval);
   };
 
   // Mock prediction - will be replaced with actual algorithm
@@ -137,8 +142,10 @@ export default function Home() {
         ) : !error && data.length > 0 ? (
           <ForexChart
             data={data}
-            title="30-Day OHLC Data"
+            title={interval === "4h" ? "1-Week 4H OHLC Data" : "1-Month Daily OHLC Data"}
             symbol={selectedPair}
+            interval={interval}
+            onIntervalChange={handleIntervalChange}
           />
         ) : null}
 
