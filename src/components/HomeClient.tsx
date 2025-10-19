@@ -9,16 +9,7 @@ import { PredictionCard } from "@/components/PredictionCard";
 import Link from "next/link";
 import type { MarketBias } from "@/algorithms/fvgAnalysis";
 import { motion } from "framer-motion";
-
-const MAJOR_FOREX_PAIRS = [
-  "EUR/USD",
-  "GBP/USD",
-  "USD/JPY",
-  "USD/CHF",
-  "AUD/USD",
-  "NZD/USD",
-  "USD/CAD",
-];
+import { ALL_FOREX_PAIRS, MAJOR_FOREX_PAIRS } from "@/pairs";
 
 interface PairBias {
   pair: string;
@@ -143,61 +134,64 @@ export function HomeClient() {
         </motion.div>
       )}
 
-      {/* Prediction Card */}
-      {loading ? (
-        <Skeleton className="h-48 w-full rounded-2xl" />
-      ) : error ? (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-4"
-        >
-          <p className="text-red-800 dark:text-red-200">{error}</p>
-          <p className="text-sm text-red-600 dark:text-red-300 mt-2">
-            Make sure to set TWELVE_API_KEY in your .env.local file
-          </p>
-        </motion.div>
-      ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <PredictionCard
-            prediction={prediction}
-            confidence={confidence}
-            symbol={selectedPair}
-            reason={marketBias?.reason}
-          />
-        </motion.div>
-      )}
+      <div className="grid md:grid-cols-2 gap-4 items-center">
+        {/* Prediction Card */}
+        {loading ? (
+          <Skeleton className="h-48 w-full rounded-2xl" />
+        ) : error ? (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-4"
+          >
+            <p className="text-red-800 dark:text-red-200">{error}</p>
+            <p className="text-sm text-red-600 dark:text-red-300 mt-2">
+              Make sure to set TWELVE_API_KEY in your .env.local file
+            </p>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <PredictionCard
+              prediction={prediction}
+              confidence={confidence}
+              symbol={selectedPair}
+              reason={marketBias?.reason}
+            />
+          </motion.div>
+        )}
 
-      {/* Market Summary */}
-      {!loading && !error && latestData && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4"
-        >
-          <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 shadow-sm">
-            <p className="text-sm text-slate-500 dark:text-slate-400">Open</p>
-            <p className="text-2xl font-bold">{latestData.open.toFixed(5)}</p>
-          </div>
-          <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 shadow-sm">
-            <p className="text-sm text-slate-500 dark:text-slate-400">High</p>
-            <p className="text-2xl font-bold">{latestData.high.toFixed(5)}</p>
-          </div>
-          <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 shadow-sm">
-            <p className="text-sm text-slate-500 dark:text-slate-400">Low</p>
-            <p className="text-2xl font-bold">{latestData.low.toFixed(5)}</p>
-          </div>
-          <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 shadow-sm">
-            <p className="text-sm text-slate-500 dark:text-slate-400">Close</p>
-            <p className="text-2xl font-bold">{latestData.close.toFixed(5)}</p>
-          </div>
-        </motion.div>
-      )}
+        {/* Market Summary */}
+        {!loading && !error && latestData && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="h-full grid md:grid-cols-2 gap-4"
+          >
+            <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 shadow-sm">
+              <p className="text-sm text-slate-500 dark:text-slate-400">Open</p>
+              <p className="text-2xl font-bold">{latestData.open.toFixed(5)}</p>
+            </div>
+            <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 shadow-sm">
+              <p className="text-sm text-slate-500 dark:text-slate-400">High</p>
+              <p className="text-2xl font-bold">{latestData.high.toFixed(5)}</p>
+            </div>
+            <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 shadow-sm">
+              <p className="text-sm text-slate-500 dark:text-slate-400">Low</p>
+              <p className="text-2xl font-bold">{latestData.low.toFixed(5)}</p>
+            </div>
+            <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 shadow-sm">
+              <p className="text-sm text-slate-500 dark:text-slate-400">Close</p>
+              <p className="text-2xl font-bold">{latestData.close.toFixed(5)}</p>
+            </div>
+          </motion.div>
+        )}
+
+      </div>
 
       {/* Chart */}
       {loading ? (
@@ -222,7 +216,7 @@ export function HomeClient() {
         </motion.div>
       ) : null}
 
-      {/* Major Forex Pairs Grid */}
+      {/* all Forex Pairs Grid */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -230,10 +224,10 @@ export function HomeClient() {
         className="space-y-4"
       >
         <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50">
-          Major Forex Pairs
+          All Forex Pairs
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {MAJOR_FOREX_PAIRS.map((pair, index) => {
+          {ALL_FOREX_PAIRS.map((pair, index) => {
             const pairBias = pairBiases.get(pair);
             return (
               <motion.div
@@ -256,20 +250,6 @@ export function HomeClient() {
             );
           })}
         </div>
-      </motion.div>
-
-      {/* CTA */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8 }}
-        className="text-center"
-      >
-        <Link href="/analyze">
-          <Button size="lg" className="text-lg px-8 rounded-xl shadow-lg">
-            View Full Analysis
-          </Button>
-        </Link>
       </motion.div>
     </>
   );

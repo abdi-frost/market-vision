@@ -1,16 +1,7 @@
 import { BiasSummaryPanel } from "./BiasSummaryPanel";
 import { fetchForexData } from "@/services/twelveData";
 import { analyzeMarketStructure } from "@/algorithms/fvgAnalysis";
-
-const MAJOR_FOREX_PAIRS = [
-  "EUR/USD",
-  "GBP/USD",
-  "USD/JPY",
-  "USD/CHF",
-  "AUD/USD",
-  "NZD/USD",
-  "USD/CAD",
-];
+import { ALL_FOREX_PAIRS } from "@/pairs";
 
 async function fetchPairBias(pair: string) {
   try {
@@ -32,7 +23,7 @@ async function fetchPairBias(pair: string) {
 export async function ServerBiasSummary() {
   // Fetch all pair biases in parallel
   const pairBiases = await Promise.all(
-    MAJOR_FOREX_PAIRS.map((pair) => fetchPairBias(pair))
+    ALL_FOREX_PAIRS.map((pair) => fetchPairBias(pair))
   );
 
   return <BiasSummaryPanel pairBiases={pairBiases} />;

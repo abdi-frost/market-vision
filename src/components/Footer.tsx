@@ -1,4 +1,5 @@
 import { Github, Globe } from "lucide-react";
+import Link from "next/link";
 
 export function Footer() {
   return (
@@ -7,12 +8,12 @@ export function Footer() {
         <div className="flex flex-col items-center justify-center space-y-4">
           <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
             <span>Developed by</span>
-            <span className="font-semibold text-slate-900 dark:text-slate-50">
+            <Link href="https://abdifrost.vercel.app" className="font-semibold text-slate-900 dark:text-slate-50">
               Megab
-            </span>
+            </Link>
           </div>
           <div className="flex items-center gap-4">
-            <a
+            <Link
               href="https://abdifrost.vercel.app"
               target="_blank"
               rel="noopener noreferrer"
@@ -21,8 +22,8 @@ export function Footer() {
             >
               <Globe className="h-4 w-4" />
               <span className="hidden sm:inline">abdifrost.vercel.app</span>
-            </a>
-            <a
+            </Link>
+            <Link
               href="https://github.com/abdifrost"
               target="_blank"
               rel="noopener noreferrer"
@@ -31,7 +32,14 @@ export function Footer() {
             >
               <Github className="h-4 w-4" />
               <span className="hidden sm:inline">abdifrost</span>
-            </a>
+            </Link>
+            <Link
+              href="/terms"
+              className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-50 transition-colors"
+              aria-label="Terms and Disclaimer"
+            >
+              <span className="underline">Terms</span>
+            </Link>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-500">
             © {new Date().getFullYear()} Market Vision. For educational purposes
