@@ -7,12 +7,14 @@ interface PredictionCardProps {
   prediction: "bullish" | "bearish" | null;
   confidence?: number;
   symbol?: string;
+  reason?: string;
 }
 
 export function PredictionCard({
   prediction,
   confidence = 0,
   symbol,
+  reason,
 }: PredictionCardProps) {
   return (
     <Card className="border-2">
@@ -21,15 +23,15 @@ export function PredictionCard({
           {prediction === "bullish" ? (
             <>
               <TrendingUp className="h-6 w-6 text-green-600" />
-              <span>Predicted Next Day Trend: Bullish 📈</span>
+              <span>Market Bias: Bullish 📈</span>
             </>
           ) : prediction === "bearish" ? (
             <>
               <TrendingDown className="h-6 w-6 text-red-600" />
-              <span>Predicted Next Day Trend: Bearish 📉</span>
+              <span>Market Bias: Bearish 📉</span>
             </>
           ) : (
-            <span>Predicted Next Day Trend: Analyzing...</span>
+            <span>Market Bias: Analyzing...</span>
           )}
         </CardTitle>
       </CardHeader>
@@ -37,8 +39,8 @@ export function PredictionCard({
         <div className="space-y-4">
           <p className="text-sm text-slate-600 dark:text-slate-400">
             {symbol
-              ? `Based on ${symbol} historical data analysis`
-              : "Based on historical data analysis"}
+              ? `Based on ${symbol} FVG and liquidity analysis`
+              : "Based on FVG and liquidity analysis"}
           </p>
           {prediction && (
             <div className="grid grid-cols-2 gap-4">
@@ -62,9 +64,15 @@ export function PredictionCard({
               </div>
             </div>
           )}
+          {reason && (
+            <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3">
+              <p className="text-xs text-slate-600 dark:text-slate-400">
+                <strong>Analysis:</strong> {reason}
+              </p>
+            </div>
+          )}
           <p className="text-xs text-slate-500 dark:text-slate-400 italic">
-            Note: This is a mock prediction. Algorithmic prediction will be
-            implemented in future updates.
+            Using ICT Smart Money Concepts: Fair Value Gaps (FVG) and Internal/External Range Liquidity (IRL/ERL)
           </p>
         </div>
       </CardContent>
