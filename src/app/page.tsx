@@ -7,6 +7,7 @@ import { ForexChart, ForexCandle } from "@/components/ForexChart";
 import { ForexCard } from "@/components/ForexCard";
 import { PredictionCard } from "@/components/PredictionCard";
 import Link from "next/link";
+import type { MarketBias } from "@/algorithms/fvgAnalysis";
 
 const MAJOR_FOREX_PAIRS = [
   "EUR/USD",
@@ -18,6 +19,12 @@ const MAJOR_FOREX_PAIRS = [
   "USD/CAD",
 ];
 
+interface PairBias {
+  pair: string;
+  bias: MarketBias | null;
+  loading: boolean;
+}
+
 export default function Home() {
   const [selectedPair, setSelectedPair] = useState<string>("EUR/USD");
   const [data, setData] = useState<ForexCandle[]>([]);
@@ -25,26 +32,64 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [usingMockData, setUsingMockData] = useState(false);
   const [interval, setInterval] = useState<string>("1day");
+  const [marketBias, setMarketBias] = useState<MarketBias | null>(null);
+  const [pairBiases, setPairBiases] = useState<Map<string, PairBias>>(new Map());
 
   useEffect(() => {
-    fetchForexData(selectedPair, interval);
+    fetchMarketAnalysis(selectedPair, interval);
   }, [selectedPair, interval]);
 
-  const fetchForexData = async (symbol: string, timeInterval: string) => {
+  // Fetch initial bias for all major pairs on mount
+  useEffect(() => {
+    const fetchAllPairBiases = async () => {
+      for (const pair of MAJOR_FOREX_PAIRS) {
+        setPairBiases((prev) => new Map(prev).set(pair, { pair, bias: null, loading: true }));
+        
+        try {
+          const response = await fetch(
+            `/api/market-analysis?symbol=${encodeURIComponent(pair)}&interval=1day`
+          );
+          const result = await response.json();
+          
+          if (result.success && result.analysis?.bias) {
+            setPairBiases((prev) =>
+              new Map(prev).set(pair, { pair, bias: result.analysis.bias, loading: false })
+            );
+          } else {
+            setPairBiases((prev) =>
+              new Map(prev).set(pair, { pair, bias: null, loading: false })
+            );
+          }
+        } catch (error) {
+          console.error(`Error fetching bias for ${pair}:`, error);
+          setPairBiases((prev) =>
+            new Map(prev).set(pair, { pair, bias: null, loading: false })
+          );
+        }
+      }
+    };
+
+    fetchAllPairBiases();
+  }, []);
+
+  const fetchMarketAnalysis = async (symbol: string, timeInterval: string) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/forex?symbol=${encodeURIComponent(symbol)}&interval=${timeInterval}`);
+      const response = await fetch(
+        `/api/market-analysis?symbol=${encodeURIComponent(symbol)}&interval=${timeInterval}`
+      );
       const result = await response.json();
       if (result.success) {
         setData(result.data);
+        setMarketBias(result.analysis?.bias || null);
         setUsingMockData(result.usingMockData || false);
       } else {
-        setError(result.error || "Failed to fetch forex data");
+        setError(result.error || "Failed to fetch market analysis");
       }
     } catch (error) {
-      console.error("Error fetching forex data:", error);
-      setError("Failed to fetch forex data");
+      console.error("Error fetching market analysis:", error);
+      setError("Failed to fetch market analysis");
     } finally {
       setLoading(false);
     }
@@ -54,12 +99,10 @@ export default function Home() {
     setInterval(newInterval);
   };
 
-  // Mock prediction - will be replaced with actual algorithm
-  const mockPrediction: "bullish" | "bearish" = 
-    data.length > 0 && data[data.length - 1]?.close > data[0]?.close 
-      ? "bullish" 
-      : "bearish";
-  const mockConfidence = 72;
+  // Use real prediction from market analysis instead of mock
+  const biasValue = marketBias?.bias || "neutral";
+  const prediction: "bullish" | "bearish" = biasValue === "neutral" ? "bearish" : biasValue;
+  const confidence = marketBias?.confidence || 50;
 
   const latestData = data.length > 0 ? data[data.length - 1] : null;
 
@@ -108,9 +151,10 @@ export default function Home() {
           </div>
         ) : (
           <PredictionCard
-            prediction={mockPrediction}
-            confidence={mockConfidence}
+            prediction={prediction}
+            confidence={confidence}
             symbol={selectedPair}
+            reason={marketBias?.reason}
           />
         )}
 
@@ -155,16 +199,20 @@ export default function Home() {
             Major Forex Pairs
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {MAJOR_FOREX_PAIRS.map((pair) => (
-              <ForexCard
-                key={pair}
-                pair={pair}
-                latestPrice={pair === selectedPair ? latestData?.close || null : null}
-                isSelected={pair === selectedPair}
-                onClick={() => setSelectedPair(pair)}
-                loading={loading && pair === selectedPair}
-              />
-            ))}
+            {MAJOR_FOREX_PAIRS.map((pair) => {
+              const pairBias = pairBiases.get(pair);
+              return (
+                <ForexCard
+                  key={pair}
+                  pair={pair}
+                  latestPrice={pair === selectedPair ? latestData?.close || null : null}
+                  isSelected={pair === selectedPair}
+                  onClick={() => setSelectedPair(pair)}
+                  loading={loading && pair === selectedPair}
+                  bias={pairBias?.bias?.bias || null}
+                />
+              );
+            })}
           </div>
         </div>
 

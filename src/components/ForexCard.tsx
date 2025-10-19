@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 interface ForexCardProps {
   pair: string;
@@ -9,6 +9,7 @@ interface ForexCardProps {
   isSelected?: boolean;
   onClick: () => void;
   loading?: boolean;
+  bias?: "bullish" | "bearish" | "neutral" | null;
 }
 
 export function ForexCard({
@@ -17,10 +18,8 @@ export function ForexCard({
   isSelected = false,
   onClick,
   loading = false,
+  bias = null,
 }: ForexCardProps) {
-  // Simple mock trend for visual feedback - in real app, calculate from data
-  const trend = latestPrice ? (latestPrice % 2 > 1 ? "up" : "down") : "neutral";
-
   return (
     <Card
       className={`cursor-pointer transition-all hover:shadow-lg ${
@@ -41,15 +40,20 @@ export function ForexCard({
                 {latestPrice.toFixed(5)}
               </p>
               <div className="flex items-center gap-1 text-sm">
-                {trend === "up" ? (
+                {bias === "bullish" ? (
                   <>
                     <TrendingUp className="h-4 w-4 text-green-600" />
                     <span className="text-green-600">Bullish</span>
                   </>
-                ) : (
+                ) : bias === "bearish" ? (
                   <>
                     <TrendingDown className="h-4 w-4 text-red-600" />
                     <span className="text-red-600">Bearish</span>
+                  </>
+                ) : (
+                  <>
+                    <Minus className="h-4 w-4 text-slate-500" />
+                    <span className="text-slate-500">Neutral</span>
                   </>
                 )}
               </div>

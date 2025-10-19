@@ -14,7 +14,7 @@ export interface Candle {
 /**
  * Generate mock forex data for development and testing
  */
-function generateMockForexData(symbol: string, outputsize: number = 30): Candle[] {
+function generateMockForexData(symbol: string, outputsize: number = 120): Candle[] {
   const data: Candle[] = [];
   const basePrice = symbol.includes("JPY") ? 110.0 : 1.0;
   const variance = basePrice * 0.01;
@@ -73,7 +73,7 @@ export async function fetchForexData(
   symbol: string,
   interval: string = "1day",
   apiKey: string,
-  outputsize: number = 30,
+  outputsize: number = 120,
   useMockData: boolean = false
 ): Promise<Candle[]> {
   // Use mock data if explicitly requested or if API key is demo/test
