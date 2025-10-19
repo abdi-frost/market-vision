@@ -2,11 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
 import { ForexChart, ForexCandle } from "@/components/ForexChart";
 import { ForexCard } from "@/components/ForexCard";
 import { PredictionCard } from "@/components/PredictionCard";
-import Link from "next/link";
 import type { MarketBias } from "@/algorithms/fvgAnalysis";
 import { motion } from "framer-motion";
 import { ALL_FOREX_PAIRS, MAJOR_FOREX_PAIRS } from "@/pairs";
