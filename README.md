@@ -6,7 +6,9 @@ A Next.js TypeScript web application that analyzes financial market data (candle
 
 ## 🎯 Features
 
-- 📈 Real-time market data visualization with interactive charts
+- 📈 **Advanced TradingView-powered charts** with professional candlestick visualization
+- 🔍 **Interactive charting tools**: Zoom in/out, pan, and drawing tools (lines, rectangles, trend lines)
+- 🖱️ **Mouse-driven navigation**: Scroll to zoom, click-drag to pan across time periods
 - 🤖 Algorithmic prediction engine for market trends
 - 💎 Beautiful UI built with shadcn/ui and Tailwind CSS
 - 📊 Detailed OHLC (Open, High, Low, Close) data analysis
@@ -17,7 +19,7 @@ A Next.js TypeScript web application that analyzes financial market data (candle
 - **Framework:** Next.js 15 with TypeScript
 - **UI Library:** shadcn/ui
 - **Styling:** Tailwind CSS v4
-- **Charts:** Recharts
+- **Charts:** TradingView Lightweight Charts (professional candlestick charts)
 - **Icons:** Lucide React
 - **Linting:** ESLint + Prettier
 
@@ -35,7 +37,8 @@ src/
 ├── components/          # Reusable UI components
 │   ├── ui/             # shadcn/ui components
 │   ├── Chart.tsx       # Legacy chart component
-│   ├── ForexChart.tsx  # Forex OHLC chart
+│   ├── AdvancedChart.tsx # TradingView-powered advanced chart
+│   ├── ForexChart.tsx  # Forex OHLC chart (uses AdvancedChart)
 │   ├── ForexCard.tsx   # Forex pair card
 │   ├── PredictionCard.tsx # Prediction display
 │   ├── Navbar.tsx      # Navigation bar
@@ -103,7 +106,9 @@ npm run dev
 
 ### Home (`/`)
 - **Forex pair selection**: Choose from 7 major forex pairs (EUR/USD, GBP/USD, etc.)
-- **Real-time charts**: 30-day OHLC data visualization
+- **Advanced TradingView charts**: Professional candlestick charts with zoom and navigation
+- **Interactive controls**: Zoom in/out, pan with mouse, drawing tools UI
+- **Timeframe switcher**: Toggle between 4H and Daily intervals
 - **Next day prediction**: Bullish/Bearish trend prediction with confidence score
 - **OHLC summary**: Current Open, High, Low, Close values
 - **Interactive cards**: Click any forex pair to update the chart and analysis
@@ -177,6 +182,8 @@ Confidence is calculated based on price movement within the day's range.
 ## 🔮 Future Enhancements
 
 - [x] Integrate live API data (Twelve Data)
+- [x] Advanced charting with TradingView-like features (zoom, pan, drawing tools UI)
+- [ ] Implement full drawing tool functionality (trend lines, shapes, annotations)
 - [ ] Add configurable timeframes (1D, 4H, 1H) switcher UI
 - [ ] Replace mock predictions with advanced algorithmic models
 - [ ] Implement advanced technical indicators (RSI, MACD, Moving Averages)
@@ -184,6 +191,29 @@ Confidence is calculated based on price movement within the day's range.
 - [ ] Include data caching to reduce API calls
 - [ ] Implement user authentication for personalized settings
 - [ ] Add more sophisticated machine learning models
+
+## 📊 Chart Features
+
+The application now uses **TradingView's Lightweight Charts** library for professional-grade financial charting:
+
+### Interactive Controls
+- **Zoom In/Out**: Use the zoom buttons or mouse wheel to zoom
+- **Pan**: Click and drag to move across the timeline
+- **Reset**: Instantly fit all data in view
+- **Crosshair**: Hover over candles to see detailed OHLC data
+
+### Drawing Tools (UI Ready)
+The toolbar includes placeholders for drawing tools:
+- **Line Tool**: For trend analysis
+- **Rectangle Tool**: For highlighting zones
+- **Trend Line Tool**: For advanced technical analysis
+
+*Note: Drawing tools are UI placeholders. Full functionality can be implemented using the lightweight-charts plugin system.*
+
+### Responsive Design
+- Automatically adapts to screen size
+- Touch-friendly controls for mobile devices
+- Dark mode support with smooth theme transitions
 
 ## 📄 License
 
