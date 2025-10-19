@@ -29,7 +29,7 @@ export default function TermsPage() {
         <h2 className="text-lg font-medium mt-4 mb-2">No Guarantees</h2>
         <p className="mb-6 text-slate-700 dark:text-slate-300">
           Past performance or simulated results are not indicative of future results. All
-          data and analyses are provided "as is" without warranty of any kind.
+          data and analyses are provided &quot;as is&quot; without warranty of any kind.
         </p>
 
         <div className="flex items-center justify-between">
