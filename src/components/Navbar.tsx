@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { TrendingUp } from "lucide-react";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function Navbar() {
   return (
@@ -25,6 +26,7 @@ export function Navbar() {
             >
               Analyze
             </Link>
+            <ThemeToggle />
           </div>
         </div>
       </div>
