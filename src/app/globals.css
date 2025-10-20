@@ -41,13 +41,6 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
@@ -68,4 +61,23 @@ body {
 [data-theme="cyber-frost"] .cyber-frost-glow {
   box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
   border-color: var(--accent);
+}
+
+/* Marquee animation for hot pairs */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  animation: marquee 20s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
 }

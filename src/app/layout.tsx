@@ -19,7 +19,7 @@ export default function RootLayout({
       <body className="antialiased flex flex-col min-h-screen">
         <ThemeProvider
           attribute="data-theme"
-          defaultTheme="dark"
+          defaultTheme="light"
           enableSystem={false}
           themes={["light", "dark", "cyber-frost"]}
         >
