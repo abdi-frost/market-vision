@@ -10,68 +10,44 @@ import type { MarketBias } from "@/algorithms/fvgAnalysis";
 import { motion } from "framer-motion";
 import { ALL_FOREX_PAIRS, MAJOR_FOREX_PAIRS } from "@/pairs";
 import { Search } from "lucide-react";
+import type { PairBias } from "@/types/market";
 
-interface PairBias {
-  pair: string;
-  bias: MarketBias | null;
-  loading: boolean;
+interface HomeClientProps {
+  serverPairBiases: PairBias[];
+  selectedPair?: string;
+  onPairSelect?: (pair: string) => void;
 }
 
-export function HomeClient() {
-  const [selectedPair, setSelectedPair] = useState<string>("EUR/USD");
+export function HomeClient({ serverPairBiases, selectedPair: externalSelectedPair, onPairSelect }: HomeClientProps) {
+  const [internalSelectedPair, setInternalSelectedPair] = useState<string>("EUR/USD");
   const [data, setData] = useState<ForexCandle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [usingMockData, setUsingMockData] = useState(false);
   const [interval, setInterval] = useState<string>("1day");
   const [marketBias, setMarketBias] = useState<MarketBias | null>(null);
-  const [pairBiases, setPairBiases] = useState<Map<string, PairBias>>(
-    new Map()
-  );
   const [searchQuery, setSearchQuery] = useState<string>("");
+
+  // Use external selectedPair if provided, otherwise use internal state
+  const selectedPair = externalSelectedPair || internalSelectedPair;
+  
+  // Handler for pair selection
+  const handlePairSelect = (pair: string) => {
+    if (onPairSelect) {
+      onPairSelect(pair);
+    } else {
+      setInternalSelectedPair(pair);
+    }
+  };
+
+  // Convert server pair biases to a Map for easy lookup
+  const pairBiasesMap = new Map<string, PairBias>(
+    serverPairBiases.map((pb) => [pb.pair, pb])
+  );
 
   useEffect(() => {
     fetchMarketAnalysis(selectedPair, interval);
   }, [selectedPair, interval]);
-
-  // Fetch initial bias for all major pairs on mount
-  useEffect(() => {
-    const fetchAllPairBiases = async () => {
-      for (const pair of MAJOR_FOREX_PAIRS) {
-        setPairBiases((prev) =>
-          new Map(prev).set(pair, { pair, bias: null, loading: true })
-        );
-
-        try {
-          const response = await fetch(
-            `/api/market-analysis?symbol=${encodeURIComponent(pair)}&interval=1day`
-          );
-          const result = await response.json();
-
-          if (result.success && result.analysis?.bias) {
-            setPairBiases((prev) =>
-              new Map(prev).set(pair, {
-                pair,
-                bias: result.analysis.bias,
-                loading: false,
-              })
-            );
-          } else {
-            setPairBiases((prev) =>
-              new Map(prev).set(pair, { pair, bias: null, loading: false })
-            );
-          }
-        } catch (error) {
-          console.error(`Error fetching bias for ${pair}:`, error);
-          setPairBiases((prev) =>
-            new Map(prev).set(pair, { pair, bias: null, loading: false })
-          );
-        }
-      }
-    };
-
-    fetchAllPairBiases();
-  }, []);
 
   const fetchMarketAnalysis = async (symbol: string, timeInterval: string) => {
     setLoading(true);
@@ -114,9 +90,9 @@ export function HomeClient() {
   );
 
   // Get hot pairs (confidence > 70%)
-  const hotPairs = Array.from(pairBiases.entries())
-    .filter(([, pairBias]) => pairBias.bias && pairBias.bias.confidence >= 70)
-    .map(([pairName, pairBias]) => ({ pair: pairName, bias: pairBias.bias }));
+  const hotPairs = serverPairBiases
+    .filter((pairBias) => pairBias.bias && pairBias.bias.confidence >= 70)
+    .map((pairBias) => ({ pair: pairBias.pair, bias: pairBias.bias }));
 
   // Top 3 quick access pairs
   const topPairs = ["EUR/USD", "GBP/USD", "USD/JPY"];
@@ -138,7 +114,7 @@ export function HomeClient() {
             {hotPairs.map(({ pair, bias }) => (
               <div
                 key={pair}
-                onClick={() => setSelectedPair(pair)}
+                onClick={() => handlePairSelect(pair)}
                 className="inline-flex items-center gap-2 bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-green-300 dark:border-green-700 cursor-pointer hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors"
               >
                 <span className="font-semibold text-slate-900 dark:text-slate-50">{pair}</span>
@@ -270,7 +246,7 @@ export function HomeClient() {
         </h2>
         <div className="grid grid-cols-3 gap-4">
           {topPairs.map((pair) => {
-            const pairBias = pairBiases.get(pair);
+            const pairBias = pairBiasesMap.get(pair);
             return (
               <motion.div
                 key={pair}
@@ -284,7 +260,7 @@ export function HomeClient() {
                     pair === selectedPair ? latestData?.close || null : null
                   }
                   isSelected={pair === selectedPair}
-                  onClick={() => setSelectedPair(pair)}
+                  onClick={() => handlePairSelect(pair)}
                   loading={loading && pair === selectedPair}
                   bias={pairBias?.bias?.bias || null}
                 />
@@ -318,7 +294,7 @@ export function HomeClient() {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filteredPairs.map((pair, index) => {
-            const pairBias = pairBiases.get(pair);
+            const pairBias = pairBiasesMap.get(pair);
             return (
               <motion.div
                 key={pair}
@@ -332,7 +308,7 @@ export function HomeClient() {
                     pair === selectedPair ? latestData?.close || null : null
                   }
                   isSelected={pair === selectedPair}
-                  onClick={() => setSelectedPair(pair)}
+                  onClick={() => handlePairSelect(pair)}
                   loading={loading && pair === selectedPair}
                   bias={pairBias?.bias?.bias || null}
                 />

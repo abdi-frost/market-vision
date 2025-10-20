@@ -3,18 +3,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { motion } from "framer-motion";
-import type { MarketBias } from "@/algorithms/fvgAnalysis";
-
-interface PairBias {
-  pair: string;
-  bias: MarketBias | null;
-}
+import type { PairBias } from "@/types/market";
 
 interface BiasSummaryPanelProps {
   pairBiases: PairBias[];
+  onPairClick?: (pair: string) => void;
 }
 
-export function BiasSummaryPanel({ pairBiases }: BiasSummaryPanelProps) {
+export function BiasSummaryPanel({ pairBiases, onPairClick }: BiasSummaryPanelProps) {
   const bullishPairs = pairBiases.filter((p) => p.bias?.bias === "bullish");
   const bearishPairs = pairBiases.filter((p) => p.bias?.bias === "bearish");
   const neutralPairs = pairBiases.filter(
@@ -54,7 +50,8 @@ export function BiasSummaryPanel({ pairBiases }: BiasSummaryPanelProps) {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="flex items-center justify-between p-2 bg-white dark:bg-slate-800 rounded-lg text-sm"
+              onClick={() => onPairClick?.(pairBias.pair)}
+              className="flex items-center justify-between p-2 bg-white dark:bg-slate-800 rounded-lg text-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
             >
               <span className="font-medium">{pairBias.pair}</span>
               {pairBias.bias?.confidence && (
