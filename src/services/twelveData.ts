@@ -76,10 +76,18 @@ export async function fetchForexData(
   outputsize: number = 120,
   useMockData: boolean = false
 ): Promise<Candle[]> {
-  // Use mock data if explicitly requested or if API key is demo/test
-  if (useMockData || apiKey.includes("demo") || apiKey.includes("test")) {
-    console.log(`Using mock data for ${symbol} with ${outputsize} data points`);
+  const isProduction = process.env.NODE_ENV === "production";
+  const isDemoKey = apiKey.includes("demo") || apiKey.includes("test");
+  
+  // In development, use mock data if explicitly requested or if using demo/test key
+  if (!isProduction && (useMockData || isDemoKey)) {
+    console.log(`[DEV] Using mock data for ${symbol} with ${outputsize} data points`);
     return generateMockForexData(symbol, outputsize);
+  }
+
+  // In production with demo key, warn but still try to use the API
+  if (isProduction && isDemoKey) {
+    console.warn(`[PROD] Using demo/test API key - data may not be real`);
   }
 
   const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(
@@ -114,8 +122,15 @@ export async function fetchForexData(
       close: parseFloat(item.close),
     })).reverse(); // Reverse to get chronological order
   } catch (error) {
-    console.error("Error fetching forex data from API, falling back to mock data:", error);
-    // Fallback to mock data if API fails
+    console.error("Error fetching forex data from API:", error);
+    
+    // In production, don't fallback to mock data - throw the error
+    if (isProduction) {
+      throw new Error(`Failed to fetch data from API: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+    
+    // In development, fallback to mock data
+    console.log("[DEV] Falling back to mock data");
     return generateMockForexData(symbol, outputsize);
   }
 }

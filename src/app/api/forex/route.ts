@@ -14,6 +14,8 @@ export async function GET(request: NextRequest) {
 
     // Get API key from environment variable
     const apiKey = process.env.TWELVE_API_KEY || "demo_api_key";
+    const isProduction = process.env.NODE_ENV === "production";
+    const isDemoKey = !apiKey || apiKey.includes("demo") || apiKey.includes("test");
 
     const data = await fetchForexData(symbol, interval, apiKey, outputsize);
 
@@ -22,7 +24,7 @@ export async function GET(request: NextRequest) {
       symbol,
       interval,
       data,
-      usingMockData: !apiKey || apiKey.includes("demo") || apiKey.includes("test"),
+      usingMockData: !isProduction && isDemoKey,
     });
   } catch (error) {
     console.error("Failed to fetch forex data:", error);
