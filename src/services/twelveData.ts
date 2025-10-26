@@ -78,27 +78,34 @@ export async function fetchForexData(
   outputsize: number = 120,
   useMockData: boolean = false
 ): Promise<Candle[]> {
-  // Use mock data if explicitly requested or if API key is demo/test
-  if (useMockData || apiKey.includes("demo") || apiKey.includes("test")) {
-    console.log(`Using mock data for ${symbol} with ${outputsize} data points`);
+  const isProduction = process.env.NODE_ENV === "production";
+  const isDemoKey = apiKey.includes("demo") || apiKey.includes("test");
+  
+  // In development, use mock data if explicitly requested or if using demo/test key
+  if (!isProduction && (useMockData || isDemoKey)) {
+    console.log(`[DEV] Using mock data for ${symbol} with ${outputsize} data points`);
     return generateMockForexData(symbol, outputsize);
   }
+// In production with demo key, warn but still try to use the API
+if (isProduction && isDemoKey) {
+  console.warn(`[PROD] Using demo/test API key - data may not be real`);
+}
 
-  // Create cache key based on request parameters
-  const cacheKey = `forex:${symbol}:${interval}:${outputsize}`;
-  
-  // Check if data exists in cache
-  const cachedData = cacheService.get<Candle[]>(cacheKey);
-  if (cachedData) {
-    console.log(`Cache hit for ${symbol} (${interval})`);
-    return cachedData;
-  }
+// Create cache key based on request parameters
+const cacheKey = `forex:${symbol}:${interval}:${outputsize}`;
 
-  console.log(`Cache miss for ${symbol} (${interval}), fetching from API...`);
+// Check if data exists in cache
+const cachedData = cacheService.get<Candle[]>(cacheKey);
+if (cachedData) {
+  console.log(`Cache hit for ${symbol} (${interval})`);
+  return cachedData;
+}
 
-  const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(
-    symbol
-  )}&interval=${interval}&apikey=${apiKey}&outputsize=${outputsize}`;
+console.log(`Cache miss for ${symbol} (${interval}), fetching from API...`);
+
+const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(
+  symbol
+)}&interval=${interval}&apikey=${apiKey}&outputsize=${outputsize}`;
 
   try {
     const response = await fetch(url, {
@@ -132,14 +139,28 @@ export async function fetchForexData(
     cacheService.set(cacheKey, formattedData, 5 * 60 * 1000);
 
     return formattedData;
-  } catch (error) {
-    console.error("Error fetching forex data from API, falling back to mock data:", error);
-    // Fallback to mock data if API fails
-    const mockData = generateMockForexData(symbol, outputsize);
-    // Cache mock data for a shorter period (1 minute) to retry API sooner
-    cacheService.set(cacheKey, mockData, 60 * 1000);
-    return mockData;
+} catch (error) {
+  console.error("Error fetching forex data from API:", error);
+
+  if (isProduction) {
+    // In production, don't fallback to mock data - throw the error
+    throw new Error(
+      `Failed to fetch data from API: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
   }
+
+  // In development, fallback to mock data
+  console.log("[DEV] Falling back to mock data");
+  const mockData = generateMockForexData(symbol, outputsize);
+
+  // Cache mock data for a short time (1 minute) to retry API sooner
+  cacheService.set(cacheKey, mockData, 60 * 1000);
+
+  return mockData;
+}
+
 }
 
 /**

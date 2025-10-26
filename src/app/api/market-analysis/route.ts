@@ -15,6 +15,8 @@ export async function GET(request: NextRequest) {
 
     // Get API key from environment variable
     const apiKey = process.env.TWELVE_API_KEY || "demo_api_key";
+    const isProduction = process.env.NODE_ENV === "production";
+    const isDemoKey = !apiKey || apiKey.includes("demo") || apiKey.includes("test");
 
     // Fetch candle data (with server-side caching)
     const data = await fetchForexData(symbol, interval, apiKey, outputsize);
@@ -45,7 +47,7 @@ export async function GET(request: NextRequest) {
         erlLevels: analysis.erlLevels,
         bias: analysis.bias,
       },
-      usingMockData: !apiKey || apiKey.includes("demo") || apiKey.includes("test"),
+      usingMockData: !isProduction && isDemoKey,
     });
 
     // Add cache headers for browser caching (5 minutes)
