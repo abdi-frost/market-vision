@@ -418,6 +418,10 @@ export function AdvancedChart({
   useEffect(() => {
     if (!seriesRef.current || data.length === 0) return;
 
+    // Note: TradingView Lightweight Charts uses UTC timestamps internally.
+    // The library (v4.2.1) does not have native timezone conversion support.
+    // Timestamps are kept in UTC as per financial market data standards.
+    // The browser's locale settings will affect time display on the axis.
     const candlestickData: CandlestickData[] = data.map((candle) => ({
       time: (new Date(candle.datetime).getTime() / 1000) as UTCTimestamp,
       open: candle.open,
