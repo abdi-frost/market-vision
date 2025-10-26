@@ -15,15 +15,21 @@ export async function GET(request: NextRequest) {
     // Get API key from environment variable
     const apiKey = process.env.TWELVE_API_KEY || "demo_api_key";
 
+    // Fetch data (with server-side caching)
     const data = await fetchForexData(symbol, interval, apiKey, outputsize);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       symbol,
       interval,
       data,
       usingMockData: !apiKey || apiKey.includes("demo") || apiKey.includes("test"),
     });
+
+    // Add cache headers for browser caching (5 minutes)
+    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+    
+    return response;
   } catch (error) {
     console.error("Failed to fetch forex data:", error);
     return NextResponse.json(

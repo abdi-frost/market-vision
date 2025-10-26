@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     // Get API key from environment variable
     const apiKey = process.env.TWELVE_API_KEY || "demo_api_key";
 
-    // Fetch candle data
+    // Fetch candle data (with server-side caching)
     const data = await fetchForexData(symbol, interval, apiKey, outputsize);
 
     if (!data || data.length === 0) {
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     // Perform market structure analysis
     const analysis = analyzeMarketStructure(data);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       symbol,
       interval,
@@ -47,6 +47,11 @@ export async function GET(request: NextRequest) {
       },
       usingMockData: !apiKey || apiKey.includes("demo") || apiKey.includes("test"),
     });
+
+    // Add cache headers for browser caching (5 minutes)
+    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+    
+    return response;
   } catch (error) {
     console.error("Failed to perform market analysis:", error);
     return NextResponse.json(
