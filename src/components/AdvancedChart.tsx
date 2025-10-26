@@ -82,6 +82,8 @@ export function AdvancedChart({
 
   // Calculate visible data points based on device
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    
     const updateVisiblePoints = () => {
       const optimalPoints = getOptimalDataPoints(data.length);
       setVisibleDataPoints(optimalPoints);

@@ -124,8 +124,8 @@ class CacheService {
 // Export singleton instance
 export const cacheService = new CacheService();
 
-// Run cleanup every 10 minutes
-if (typeof setInterval !== "undefined") {
+// Run cleanup every 10 minutes (only in browser environment)
+if (typeof window !== "undefined" && typeof setInterval !== "undefined") {
   setInterval(() => {
     cacheService.cleanup();
   }, 10 * 60 * 1000);
