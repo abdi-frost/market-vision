@@ -51,6 +51,29 @@ interface AdvancedChartProps {
 
 type DrawingTool = "none" | "line" | "rectangle" | "trendline";
 
+// Detect if device is mobile
+const isMobileDevice = () => {
+  if (typeof window === "undefined") return false;
+  return window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
+
+// Calculate optimal data points based on device
+const getOptimalDataPoints = (totalDataPoints: number): number => {
+  if (typeof window === "undefined") return totalDataPoints;
+  
+  const isMobile = isMobileDevice();
+  const width = window.innerWidth;
+  
+  // Mobile devices: show fewer data points for better performance
+  if (isMobile || width < 768) {
+    return Math.min(60, totalDataPoints); // Max 60 candles on mobile
+  } else if (width < 1024) {
+    return Math.min(90, totalDataPoints); // Max 90 candles on tablet
+  }
+  
+  return totalDataPoints; // Full data on desktop
+};
+
 export function AdvancedChart({
   data,
   title = "OHLC Data",
@@ -67,8 +90,26 @@ export function AdvancedChart({
   const [drawings, setDrawings] = useState<Drawing[]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentDrawing, setCurrentDrawing] = useState<DrawingPoint[]>([]);
+  const [visibleDataPoints, setVisibleDataPoints] = useState(0);
+  const [showLoadMore, setShowLoadMore] = useState(false);
 
   const chartTitle = symbol ? `${symbol} - ${title}` : title;
+
+  // Calculate visible data points based on device
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    
+    const updateVisiblePoints = () => {
+      const optimalPoints = getOptimalDataPoints(data.length);
+      setVisibleDataPoints(optimalPoints);
+      setShowLoadMore(optimalPoints < data.length);
+    };
+    
+    updateVisiblePoints();
+    window.addEventListener('resize', updateVisiblePoints);
+    
+    return () => window.removeEventListener('resize', updateVisiblePoints);
+  }, [data.length]);
 
   // Detect dark mode
   useEffect(() => {
@@ -414,32 +455,38 @@ export function AdvancedChart({
     isDarkMode,
   ]);
 
-  // Update data
-  useEffect(() => {
-    if (!seriesRef.current || data.length === 0) return;
+// Update data
+useEffect(() => {
+  if (!seriesRef.current || data.length === 0) return;
 
-    // Note: TradingView Lightweight Charts uses UTC timestamps internally.
-    // The library (v4.2.1) does not have native timezone conversion support.
-    // Timestamps are kept in UTC as per financial market data standards.
-    // The browser's locale settings will affect time display on the axis.
-    const candlestickData: CandlestickData[] = data.map((candle) => ({
-      time: (new Date(candle.datetime).getTime() / 1000) as UTCTimestamp,
-      open: candle.open,
-      high: candle.high,
-      low: candle.low,
-      close: candle.close,
-    }));
+  // Use only visible data points for better performance
+  const dataToDisplay =
+    visibleDataPoints > 0 && visibleDataPoints < data.length
+      ? data.slice(-visibleDataPoints)
+      : data;
 
-    seriesRef.current.setData(candlestickData);
+  // Note: TradingView Lightweight Charts uses UTC timestamps internally.
+  // The library (v4.2.1) does not have native timezone conversion support.
+  // Timestamps are kept in UTC as per financial market data standards.
+  // The browser's locale settings will affect time display on the axis.
+  const candlestickData: CandlestickData[] = dataToDisplay.map((candle) => ({
+    time: (new Date(candle.datetime).getTime() / 1000) as UTCTimestamp,
+    open: candle.open,
+    high: candle.high,
+    low: candle.low,
+    close: candle.close,
+  }));
 
-    // Auto-fit content
-    if (chartRef.current) {
-      chartRef.current.timeScale().fitContent();
-    }
+  seriesRef.current.setData(candlestickData);
 
-    // Re-render drawings after data update
-    setTimeout(() => renderDrawings(), 100);
-  }, [data, renderDrawings]);
+  // Auto-fit content
+  if (chartRef.current) {
+    chartRef.current.timeScale().fitContent();
+  }
+
+  // Re-render drawings after data update
+  setTimeout(() => renderDrawings(), 100);
+}, [data, visibleDataPoints, renderDrawings]);
 
   // Zoom controls
   const handleZoomIn = () => {
@@ -488,12 +535,18 @@ export function AdvancedChart({
     renderDrawings();
   };
 
+  const handleLoadMore = () => {
+    // Load all data
+    setVisibleDataPoints(data.length);
+    setShowLoadMore(false);
+  };
+
   return (
     <Card>
       <CardHeader>
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
-            <CardTitle>{chartTitle}</CardTitle>
+            <CardTitle className="text-lg md:text-xl">{chartTitle}</CardTitle>
             {onIntervalChange && (
               <div className="flex gap-2">
                 <Button
@@ -513,6 +566,23 @@ export function AdvancedChart({
               </div>
             )}
           </div>
+
+          {/* Performance info for mobile */}
+          {showLoadMore && (
+            <div className="flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2 text-xs md:text-sm">
+              <span className="text-blue-700 dark:text-blue-300">
+                Showing last {visibleDataPoints} of {data.length} candles for better performance
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLoadMore}
+                className="text-blue-700 dark:text-blue-300 h-auto py-1 px-2"
+              >
+                Load All
+              </Button>
+            </div>
+          )}
 
           {/* Chart Controls */}
           <div className="flex flex-wrap gap-2">
@@ -602,7 +672,11 @@ export function AdvancedChart({
       <CardContent>
         <div
           ref={chartContainerRef}
-          style={{ height: "500px", position: "relative" }}
+          style={{ 
+            height: isMobileDevice() ? "400px" : "500px", 
+            position: "relative",
+            touchAction: "pan-y pinch-zoom" // Optimize touch handling for mobile
+          }}
         />
         {activeTool !== "none" && (
           <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">

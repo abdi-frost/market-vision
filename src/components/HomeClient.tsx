@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { ForexChart, ForexCandle } from "@/components/ForexChart";
@@ -8,7 +8,7 @@ import { ForexCard } from "@/components/ForexCard";
 import { PredictionCard } from "@/components/PredictionCard";
 import type { MarketBias } from "@/algorithms/fvgAnalysis";
 import { motion } from "framer-motion";
-import { ALL_FOREX_PAIRS, MAJOR_FOREX_PAIRS } from "@/pairs";
+import { ALL_FOREX_PAIRS } from "@/pairs";
 import { Search } from "lucide-react";
 import type { PairBias } from "@/types/market";
 
@@ -17,6 +17,17 @@ interface HomeClientProps {
   selectedPair?: string;
   onPairSelect?: (pair: string) => void;
 }
+
+// Client-side cache with TTL
+interface CachedData {
+  data: ForexCandle[];
+  marketBias: MarketBias | null;
+  usingMockData: boolean;
+  timestamp: number;
+}
+
+const CLIENT_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const clientCache = new Map<string, CachedData>();
 
 export function HomeClient({ serverPairBiases, selectedPair: externalSelectedPair, onPairSelect }: HomeClientProps) {
   const [internalSelectedPair, setInternalSelectedPair] = useState<string>("EUR/USD");
@@ -27,6 +38,9 @@ export function HomeClient({ serverPairBiases, selectedPair: externalSelectedPai
   const [interval, setInterval] = useState<string>("1day");
   const [marketBias, setMarketBias] = useState<MarketBias | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  
+  // Track ongoing requests to prevent duplicate fetches
+  const ongoingRequests = useRef<Map<string, Promise<void>>>(new Map());
 
   // Use external selectedPair if provided, otherwise use internal state
   const selectedPair = externalSelectedPair || internalSelectedPair;
@@ -50,26 +64,71 @@ export function HomeClient({ serverPairBiases, selectedPair: externalSelectedPai
   }, [selectedPair, interval]);
 
   const fetchMarketAnalysis = async (symbol: string, timeInterval: string) => {
+    // Create cache key
+    const cacheKey = `${symbol}:${timeInterval}`;
+    
+    // Check if there's an ongoing request for this key
+    const ongoingRequest = ongoingRequests.current.get(cacheKey);
+    if (ongoingRequest) {
+      await ongoingRequest;
+      return;
+    }
+    
+    // Check cache first
+    const cached = clientCache.get(cacheKey);
+    const now = Date.now();
+    
+    if (cached && (now - cached.timestamp) < CLIENT_CACHE_TTL) {
+      console.log(`Client cache hit for ${symbol} (${timeInterval})`);
+      setData(cached.data);
+      setMarketBias(cached.marketBias);
+      setUsingMockData(cached.usingMockData);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     setLoading(true);
     setError(null);
-    try {
-      const response = await fetch(
-        `/api/market-analysis?symbol=${encodeURIComponent(symbol)}&interval=${timeInterval}`
-      );
-      const result = await response.json();
-      if (result.success) {
-        setData(result.data);
-        setMarketBias(result.analysis?.bias || null);
-        setUsingMockData(result.usingMockData || false);
-      } else {
-        setError(result.error || "Failed to fetch market analysis");
+    
+    // Create promise for this request
+    const requestPromise = (async () => {
+      try {
+        const response = await fetch(
+          `/api/market-analysis?symbol=${encodeURIComponent(symbol)}&interval=${timeInterval}`
+        );
+        const result = await response.json();
+        
+        if (result.success) {
+          const newData = result.data;
+          const newMarketBias = result.analysis?.bias || null;
+          const newUsingMockData = result.usingMockData || false;
+          
+          // Update cache
+          clientCache.set(cacheKey, {
+            data: newData,
+            marketBias: newMarketBias,
+            usingMockData: newUsingMockData,
+            timestamp: Date.now(),
+          });
+          
+          setData(newData);
+          setMarketBias(newMarketBias);
+          setUsingMockData(newUsingMockData);
+        } else {
+          setError(result.error || "Failed to fetch market analysis");
+        }
+      } catch (error) {
+        console.error("Error fetching market analysis:", error);
+        setError("Failed to fetch market analysis");
+      } finally {
+        setLoading(false);
+        ongoingRequests.current.delete(cacheKey);
       }
-    } catch (error) {
-      console.error("Error fetching market analysis:", error);
-      setError("Failed to fetch market analysis");
-    } finally {
-      setLoading(false);
-    }
+    })();
+    
+    ongoingRequests.current.set(cacheKey, requestPromise);
+    await requestPromise;
   };
 
   const handleIntervalChange = (newInterval: string) => {

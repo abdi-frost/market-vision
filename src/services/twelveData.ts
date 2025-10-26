@@ -3,6 +3,8 @@
  * Documentation: https://twelvedata.com/docs
  */
 
+import { cacheService } from "./cache";
+
 export interface Candle {
   datetime: string;
   open: number;
@@ -61,7 +63,7 @@ interface TwelveDataResponse {
 }
 
 /**
- * Fetch OHLC data from Twelve Data API
+ * Fetch OHLC data from Twelve Data API with caching
  * @param symbol - The forex pair symbol (e.g., "EUR/USD")
  * @param interval - The time interval (e.g., "1day", "4h", "1h")
  * @param apiKey - The Twelve Data API key
@@ -84,15 +86,26 @@ export async function fetchForexData(
     console.log(`[DEV] Using mock data for ${symbol} with ${outputsize} data points`);
     return generateMockForexData(symbol, outputsize);
   }
+// In production with demo key, warn but still try to use the API
+if (isProduction && isDemoKey) {
+  console.warn(`[PROD] Using demo/test API key - data may not be real`);
+}
 
-  // In production with demo key, warn but still try to use the API
-  if (isProduction && isDemoKey) {
-    console.warn(`[PROD] Using demo/test API key - data may not be real`);
-  }
+// Create cache key based on request parameters
+const cacheKey = `forex:${symbol}:${interval}:${outputsize}`;
 
-  const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(
-    symbol
-  )}&interval=${interval}&apikey=${apiKey}&outputsize=${outputsize}`;
+// Check if data exists in cache
+const cachedData = cacheService.get<Candle[]>(cacheKey);
+if (cachedData) {
+  console.log(`Cache hit for ${symbol} (${interval})`);
+  return cachedData;
+}
+
+console.log(`Cache miss for ${symbol} (${interval}), fetching from API...`);
+
+const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(
+  symbol
+)}&interval=${interval}&apikey=${apiKey}&outputsize=${outputsize}`;
 
   try {
     const response = await fetch(url, {
@@ -114,25 +127,40 @@ export async function fetchForexData(
     }
 
     // Convert API response to our Candle format
-    return data.values.map((item) => ({
+    const formattedData = data.values.map((item) => ({
       datetime: item.datetime,
       open: parseFloat(item.open),
       high: parseFloat(item.high),
       low: parseFloat(item.low),
       close: parseFloat(item.close),
     })).reverse(); // Reverse to get chronological order
-  } catch (error) {
-    console.error("Error fetching forex data from API:", error);
-    
+
+    // Store in cache with 5 minute TTL
+    cacheService.set(cacheKey, formattedData, 5 * 60 * 1000);
+
+    return formattedData;
+} catch (error) {
+  console.error("Error fetching forex data from API:", error);
+
+  if (isProduction) {
     // In production, don't fallback to mock data - throw the error
-    if (isProduction) {
-      throw new Error(`Failed to fetch data from API: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-    
-    // In development, fallback to mock data
-    console.log("[DEV] Falling back to mock data");
-    return generateMockForexData(symbol, outputsize);
+    throw new Error(
+      `Failed to fetch data from API: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
   }
+
+  // In development, fallback to mock data
+  console.log("[DEV] Falling back to mock data");
+  const mockData = generateMockForexData(symbol, outputsize);
+
+  // Cache mock data for a short time (1 minute) to retry API sooner
+  cacheService.set(cacheKey, mockData, 60 * 1000);
+
+  return mockData;
+}
+
 }
 
 /**

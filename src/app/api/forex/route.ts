@@ -17,15 +17,21 @@ export async function GET(request: NextRequest) {
     const isProduction = process.env.NODE_ENV === "production";
     const isDemoKey = !apiKey || apiKey.includes("demo") || apiKey.includes("test");
 
+    // Fetch data (with server-side caching)
     const data = await fetchForexData(symbol, interval, apiKey, outputsize);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       symbol,
       interval,
       data,
       usingMockData: !isProduction && isDemoKey,
     });
+
+    // Add cache headers for browser caching (5 minutes)
+    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+    
+    return response;
   } catch (error) {
     console.error("Failed to fetch forex data:", error);
     return NextResponse.json(
