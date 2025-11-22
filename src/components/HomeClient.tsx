@@ -163,21 +163,21 @@ export function HomeClient({ serverPairBiases, selectedPair: externalSelectedPai
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-4 mb-6 overflow-hidden"
+          className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 mb-4 sm:mb-6 overflow-hidden"
         >
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-lg font-bold text-green-700 dark:text-green-400">🔥 Hot Pairs</span>
+            <span className="text-base sm:text-lg font-bold text-green-700 dark:text-green-400">🔥 Hot Pairs</span>
             <span className="text-xs text-green-600 dark:text-green-400">(70%+ Confidence)</span>
           </div>
-          <div className="flex gap-4 animate-marquee whitespace-nowrap">
+          <div className="flex gap-3 sm:gap-4 animate-marquee whitespace-nowrap">
             {hotPairs.map(({ pair, bias }) => (
               <div
                 key={pair}
                 onClick={() => handlePairSelect(pair)}
-                className="inline-flex items-center gap-2 bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-green-300 dark:border-green-700 cursor-pointer hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors"
+                className="inline-flex items-center gap-2 bg-white dark:bg-slate-800 px-3 sm:px-4 py-2 rounded-lg border border-green-300 dark:border-green-700 cursor-pointer hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors"
               >
-                <span className="font-semibold text-slate-900 dark:text-slate-50">{pair}</span>
-                <span className={`text-sm font-bold ${bias?.bias === "bullish" ? "text-green-600" : "text-red-600"}`}>
+                <span className="font-semibold text-sm sm:text-base text-slate-900 dark:text-slate-50">{pair}</span>
+                <span className={`text-xs sm:text-sm font-bold ${bias?.bias === "bullish" ? "text-green-600" : "text-red-600"}`}>
                   {bias?.bias === "bullish" ? "📈" : "📉"} {bias?.confidence}%
                 </span>
               </div>
@@ -191,13 +191,13 @@ export function HomeClient({ serverPairBiases, selectedPair: externalSelectedPai
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4"
+          className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl sm:rounded-2xl p-3 sm:p-4"
         >
-          <p className="text-blue-800 dark:text-blue-200">
+          <p className="text-sm sm:text-base text-blue-800 dark:text-blue-200">
             📊 Using mock data for demonstration. To use live data, set a valid
             TWELVE_API_KEY in your .env.local file.
           </p>
-          <p className="text-sm text-blue-600 dark:text-blue-300 mt-2">
+          <p className="text-xs sm:text-sm text-blue-600 dark:text-blue-300 mt-2">
             Get your free API key from{" "}
             <a
               href="https://twelvedata.com"
@@ -211,18 +211,18 @@ export function HomeClient({ serverPairBiases, selectedPair: externalSelectedPai
         </motion.div>
       )}
 
-      <div className="grid md:grid-cols-2 gap-4 items-center">
+      <div className="grid sm:grid-cols-2 gap-3 sm:gap-4 items-start">
         {/* Prediction Card */}
         {loading ? (
-          <Skeleton className="h-48 w-full rounded-2xl" />
+          <Skeleton className="h-48 w-full rounded-xl sm:rounded-2xl" />
         ) : error ? (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-4"
+            className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl sm:rounded-2xl p-3 sm:p-4"
           >
-            <p className="text-red-800 dark:text-red-200">{error}</p>
-            <p className="text-sm text-red-600 dark:text-red-300 mt-2">
+            <p className="text-sm sm:text-base text-red-800 dark:text-red-200">{error}</p>
+            <p className="text-xs sm:text-sm text-red-600 dark:text-red-300 mt-2">
               Make sure to set TWELVE_API_KEY in your .env.local file
             </p>
           </motion.div>
@@ -247,23 +247,23 @@ export function HomeClient({ serverPairBiases, selectedPair: externalSelectedPai
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="h-full grid md:grid-cols-2 gap-4"
+            className="h-full grid grid-cols-2 gap-3 sm:gap-4"
           >
-            <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 shadow-sm">
-              <p className="text-sm text-slate-500 dark:text-slate-400">Open</p>
-              <p className="text-2xl font-bold">{latestData.open.toFixed(5)}</p>
+            <div className="bg-slate-50 dark:bg-slate-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm">
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Open</p>
+              <p className="text-lg sm:text-2xl font-bold">{latestData.open.toFixed(5)}</p>
             </div>
-            <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 shadow-sm">
-              <p className="text-sm text-slate-500 dark:text-slate-400">High</p>
-              <p className="text-2xl font-bold">{latestData.high.toFixed(5)}</p>
+            <div className="bg-slate-50 dark:bg-slate-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm">
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">High</p>
+              <p className="text-lg sm:text-2xl font-bold">{latestData.high.toFixed(5)}</p>
             </div>
-            <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 shadow-sm">
-              <p className="text-sm text-slate-500 dark:text-slate-400">Low</p>
-              <p className="text-2xl font-bold">{latestData.low.toFixed(5)}</p>
+            <div className="bg-slate-50 dark:bg-slate-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm">
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Low</p>
+              <p className="text-lg sm:text-2xl font-bold">{latestData.low.toFixed(5)}</p>
             </div>
-            <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 shadow-sm">
-              <p className="text-sm text-slate-500 dark:text-slate-400">Close</p>
-              <p className="text-2xl font-bold">{latestData.close.toFixed(5)}</p>
+            <div className="bg-slate-50 dark:bg-slate-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm">
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Close</p>
+              <p className="text-lg sm:text-2xl font-bold">{latestData.close.toFixed(5)}</p>
             </div>
           </motion.div>
         )}
@@ -272,7 +272,7 @@ export function HomeClient({ serverPairBiases, selectedPair: externalSelectedPai
 
       {/* Chart */}
       {loading ? (
-        <Skeleton className="h-96 w-full rounded-2xl" />
+        <Skeleton className="h-80 sm:h-96 w-full rounded-xl sm:rounded-2xl" />
       ) : !error && data.length > 0 ? (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -298,12 +298,12 @@ export function HomeClient({ serverPairBiases, selectedPair: externalSelectedPai
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="space-y-4"
+        className="space-y-3 sm:space-y-4"
       >
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50">
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-50">
           Quick Access
         </h2>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           {topPairs.map((pair) => {
             const pairBias = pairBiasesMap.get(pair);
             return (
@@ -334,13 +334,13 @@ export function HomeClient({ serverPairBiases, selectedPair: externalSelectedPai
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="space-y-4"
+        className="space-y-3 sm:space-y-4"
       >
-        <div className="flex items-center justify-between gap-4">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-50">
             All Forex Pairs
           </h2>
-          <div className="relative flex-1 max-w-md">
+          <div className="relative w-full sm:flex-1 sm:max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
               type="text"
@@ -351,7 +351,7 @@ export function HomeClient({ serverPairBiases, selectedPair: externalSelectedPai
             />
           </div>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {filteredPairs.map((pair, index) => {
             const pairBias = pairBiasesMap.get(pair);
             return (
