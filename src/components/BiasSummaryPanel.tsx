@@ -30,17 +30,17 @@ export function BiasSummaryPanel({ pairBiases, onPairClick }: BiasSummaryPanelPr
     color: string;
     bgColor: string;
   }) => (
-    <div className={`${bgColor} rounded-2xl p-4 border border-slate-200 dark:border-slate-700`}>
+    <div className={`${bgColor} rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200 dark:border-slate-700`}>
       <div className="flex items-center gap-2 mb-3">
-        <Icon className={`h-5 w-5 ${color}`} />
-        <h3 className={`font-semibold ${color}`}>{title}</h3>
-        <span className="ml-auto text-sm text-slate-500 dark:text-slate-400">
+        <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${color}`} />
+        <h3 className={`text-sm sm:text-base font-semibold ${color}`}>{title}</h3>
+        <span className="ml-auto text-xs sm:text-sm text-slate-500 dark:text-slate-400">
           {pairs.length}
         </span>
       </div>
       <div className="space-y-2">
         {pairs.length === 0 ? (
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
             No pairs found
           </p>
         ) : (
@@ -51,7 +51,7 @@ export function BiasSummaryPanel({ pairBiases, onPairClick }: BiasSummaryPanelPr
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05 }}
               onClick={() => onPairClick?.(pairBias.pair)}
-              className="flex items-center justify-between p-2 bg-white dark:bg-slate-800 rounded-lg text-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              className="flex items-center justify-between p-2 bg-white dark:bg-slate-800 rounded-lg text-xs sm:text-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
             >
               <span className="font-medium">{pairBias.pair}</span>
               {pairBias.bias?.confidence && (
@@ -67,11 +67,11 @@ export function BiasSummaryPanel({ pairBiases, onPairClick }: BiasSummaryPanelPr
   );
 
   return (
-    <Card className="rounded-2xl shadow-lg">
-      <CardHeader>
-        <CardTitle className="text-xl">Market Bias Summary</CardTitle>
+    <Card className="rounded-xl sm:rounded-2xl shadow-lg">
+      <CardHeader className="p-4 sm:p-6">
+        <CardTitle className="text-lg sm:text-xl">Market Bias Summary</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0">
         <CategoryCard
           title="🟢 Bullish"
           pairs={bullishPairs}

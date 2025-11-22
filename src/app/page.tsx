@@ -31,8 +31,8 @@ export default async function Home() {
   const serverPairBiases = await fetchAllPairBiases();
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-[1600px] mx-auto space-y-8">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div className="max-w-[1600px] mx-auto space-y-6 sm:space-y-8">
         <MarketDashboard serverPairBiases={serverPairBiases} />
       </div>
     </div>

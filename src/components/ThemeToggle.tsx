@@ -37,7 +37,7 @@ export function ThemeToggle() {
         aria-label="Toggle theme"
       >
         <Icon className="h-4 w-4" />
-        <span className="text-sm font-medium hidden sm:inline">
+        <span className="text-sm font-medium hidden md:inline">
           {currentTheme.label}
         </span>
       </button>
@@ -54,7 +54,7 @@ export function ThemeToggle() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
-              className="absolute right-0 mt-2 w-48 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg z-20 overflow-hidden"
+              className="absolute right-0 mt-2 w-44 sm:w-48 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg z-20 overflow-hidden"
             >
               {themes.map((themeOption) => {
                 const ThemeIcon = themeOption.icon;
@@ -65,7 +65,7 @@ export function ThemeToggle() {
                       setTheme(themeOption.value);
                       setIsOpen(false);
                     }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors ${
+                    className={`w-full flex items-center gap-3 px-3 sm:px-4 py-3 text-xs sm:text-sm transition-colors ${
                       theme === themeOption.value
                         ? "bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-50"
                         : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50"

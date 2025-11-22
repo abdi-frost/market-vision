@@ -17,9 +17,9 @@ export function MarketDashboard({ serverPairBiases }: MarketDashboardProps) {
   };
 
   return (
-    <div className="grid lg:grid-cols-3 gap-6">
+    <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
       {/* Left Column - Chart and Prediction (2 columns) */}
-      <div className="lg:col-span-2 space-y-6">
+      <div className="lg:col-span-2 space-y-4 sm:space-y-6">
         <HomeClient 
           serverPairBiases={serverPairBiases} 
           selectedPair={selectedPair}
