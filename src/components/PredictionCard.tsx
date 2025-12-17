@@ -17,7 +17,7 @@ export function PredictionCard({
   reason,
 }: PredictionCardProps) {
   return (
-    <Card className="border-2">
+    <Card className="border-2 border-slate-200 dark:border-slate-700">
       <CardHeader className="p-4 sm:p-6">
         <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
           {prediction === "bullish" ? (

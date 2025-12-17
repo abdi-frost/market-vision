@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { fetchForexData } from "@/services/twelveData";
 import { analyzeMarketStructure } from "@/algorithms/fvgAnalysis";
+import { successResponse, handleApiError, createApiError, errorResponse } from "@/lib/api";
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,33 +23,33 @@ export async function GET(request: NextRequest) {
     const data = await fetchForexData(symbol, interval, apiKey, outputsize);
 
     if (!data || data.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "No data available for analysis",
-        },
-        { status: 404 }
+      return errorResponse(
+        createApiError("No data available for analysis", "NOT_FOUND")
       );
     }
 
     // Perform market structure analysis
     const analysis = analyzeMarketStructure(data);
 
-    const response = NextResponse.json({
-      success: true,
-      symbol,
-      interval,
-      data,
-      analysis: {
-        fvgs: analysis.fvgs,
-        swingHigh: analysis.swingHigh,
-        swingLow: analysis.swingLow,
-        irlLevels: analysis.irlLevels,
-        erlLevels: analysis.erlLevels,
-        bias: analysis.bias,
+    const response = successResponse(
+      {
+        symbol,
+        interval,
+        data,
+        analysis: {
+          fvgs: analysis.fvgs,
+          swingHigh: analysis.swingHigh,
+          swingLow: analysis.swingLow,
+          irlLevels: analysis.irlLevels,
+          erlLevels: analysis.erlLevels,
+          bias: analysis.bias,
+        },
+        usingMockData: !isProduction && isDemoKey,
       },
-      usingMockData: !isProduction && isDemoKey,
-    });
+      {
+        timestamp: new Date().toISOString(),
+      }
+    );
 
     // Add cache headers for browser caching (5 minutes)
     response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
@@ -56,13 +57,6 @@ export async function GET(request: NextRequest) {
     return response;
   } catch (error) {
     console.error("Failed to perform market analysis:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Failed to perform market analysis",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

@@ -22,8 +22,8 @@ export function ForexCard({
 }: ForexCardProps) {
   return (
     <Card
-      className={`cursor-pointer transition-all hover:shadow-lg ${
-        isSelected ? "border-2 border-primary shadow-lg" : ""
+      className={`cursor-pointer transition-all hover:shadow-lg hover:border-slate-300 dark:hover:border-slate-600 ${
+        isSelected ? "border-2 border-slate-900 dark:border-slate-50 shadow-lg" : ""
       }`}
       onClick={onClick}
     >

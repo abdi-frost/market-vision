@@ -19,9 +19,9 @@ export default function RootLayout({
       <body className="antialiased flex flex-col min-h-screen">
         <ThemeProvider
           attribute="data-theme"
-          defaultTheme="dark"
-          enableSystem={false}
-          themes={["light", "dark", "cyber-frost"]}
+          defaultTheme="system"
+          enableSystem={true}
+          themes={["light", "dark", "system"]}
         >
           <Navbar />
           <main className="flex-1">{children}</main>

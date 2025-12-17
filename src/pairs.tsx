@@ -1,3 +1,9 @@
+export const UPDATE_PAIRS = [
+    // "EUR/USD",
+    // "USD/JPY",
+    "USD/CAD"
+]
+
 export const MAJOR_FOREX_PAIRS = [
     "EUR/USD",
     "GBP/USD",

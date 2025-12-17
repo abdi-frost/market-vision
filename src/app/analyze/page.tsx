@@ -140,13 +140,13 @@ export default function AnalyzePage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b">
-                      <th className="text-left p-2 font-semibold">Date</th>
-                      <th className="text-right p-2 font-semibold">Open</th>
-                      <th className="text-right p-2 font-semibold">High</th>
-                      <th className="text-right p-2 font-semibold">Low</th>
-                      <th className="text-right p-2 font-semibold">Close</th>
-                      <th className="text-right p-2 font-semibold">Change</th>
+                    <tr className="border-b border-slate-200 dark:border-slate-700">
+                      <th className="text-left p-2 font-semibold text-slate-900 dark:text-slate-50">Date</th>
+                      <th className="text-right p-2 font-semibold text-slate-900 dark:text-slate-50">Open</th>
+                      <th className="text-right p-2 font-semibold text-slate-900 dark:text-slate-50">High</th>
+                      <th className="text-right p-2 font-semibold text-slate-900 dark:text-slate-50">Low</th>
+                      <th className="text-right p-2 font-semibold text-slate-900 dark:text-slate-50">Close</th>
+                      <th className="text-right p-2 font-semibold text-slate-900 dark:text-slate-50">Change</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -155,18 +155,18 @@ export default function AnalyzePage() {
                       const changePercent = (change / item.open) * 100;
                       const isPositive = change >= 0;
                       return (
-                        <tr key={index} className="border-b hover:bg-slate-50 dark:hover:bg-slate-900">
-                          <td className="p-2">{item.date}</td>
-                          <td className="text-right p-2">
+                        <tr key={index} className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800">
+                          <td className="p-2 text-slate-900 dark:text-slate-50">{item.date}</td>
+                          <td className="text-right p-2 text-slate-900 dark:text-slate-50">
                             ${item.open.toFixed(2)}
                           </td>
-                          <td className="text-right p-2">
+                          <td className="text-right p-2 text-slate-900 dark:text-slate-50">
                             ${item.high.toFixed(2)}
                           </td>
-                          <td className="text-right p-2">
+                          <td className="text-right p-2 text-slate-900 dark:text-slate-50">
                             ${item.low.toFixed(2)}
                           </td>
-                          <td className="text-right p-2">
+                          <td className="text-right p-2 text-slate-900 dark:text-slate-50">
                             ${item.close.toFixed(2)}
                           </td>
                           <td
@@ -189,7 +189,7 @@ export default function AnalyzePage() {
 
         {/* Prediction Result */}
         {!loading && (
-          <Card className="border-2">
+          <Card className="border-2 border-slate-200 dark:border-slate-700">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 {prediction === "bullish" ? (
@@ -212,7 +212,7 @@ export default function AnalyzePage() {
               <div className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <h3 className="font-semibold">Prediction Details</h3>
+                    <h3 className="font-semibold text-slate-900 dark:text-slate-50">Prediction Details</h3>
                     <p className="text-sm text-slate-600 dark:text-slate-400">
                       The algorithm analyzes the latest OHLC data to predict
                       whether the next day is likely to be bullish or bearish.
@@ -223,9 +223,9 @@ export default function AnalyzePage() {
                     </p>
                   </div>
                   <div className="space-y-2">
-                    <h3 className="font-semibold">Confidence Score</h3>
+                    <h3 className="font-semibold text-slate-900 dark:text-slate-50">Confidence Score</h3>
                     <div className="flex items-center gap-4">
-                      <div className="flex-1 bg-slate-200 dark:bg-slate-800 rounded-full h-4">
+                      <div className="flex-1 bg-slate-200 dark:bg-slate-700 rounded-full h-4">
                         <div
                           className={`h-4 rounded-full ${
                             prediction === "bullish"
@@ -235,7 +235,7 @@ export default function AnalyzePage() {
                           style={{ width: `${confidence}%` }}
                         ></div>
                       </div>
-                      <span className="text-2xl font-bold">{confidence}%</span>
+                      <span className="text-2xl font-bold text-slate-900 dark:text-slate-50">{confidence}%</span>
                     </div>
                     <p className="text-xs text-slate-500 dark:text-slate-500">
                       Confidence based on price movement within the day&apos;s range

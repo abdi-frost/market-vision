@@ -30,7 +30,7 @@ export function BiasSummaryPanel({ pairBiases, onPairClick }: BiasSummaryPanelPr
     color: string;
     bgColor: string;
   }) => (
-    <div className={`${bgColor} rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200 dark:border-slate-700`}>
+    <div className={`${bgColor} rounded-xl p-3 sm:p-4 border border-slate-200 dark:border-slate-700`}>
       <div className="flex items-center gap-2 mb-3">
         <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${color}`} />
         <h3 className={`text-sm sm:text-base font-semibold ${color}`}>{title}</h3>
@@ -45,13 +45,13 @@ export function BiasSummaryPanel({ pairBiases, onPairClick }: BiasSummaryPanelPr
           </p>
         ) : (
           pairs.map((pairBias, index) => (
-            <motion.div
+              <motion.div
               key={pairBias.pair}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05 }}
               onClick={() => onPairClick?.(pairBias.pair)}
-              className="flex items-center justify-between p-2 bg-white dark:bg-slate-800 rounded-lg text-xs sm:text-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              className="flex items-center justify-between p-2 bg-white dark:bg-slate-800 rounded-lg text-xs sm:text-sm cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border border-slate-100 dark:border-slate-700"
             >
               <span className="font-medium">{pairBias.pair}</span>
               {pairBias.bias?.confidence && (
@@ -67,7 +67,7 @@ export function BiasSummaryPanel({ pairBiases, onPairClick }: BiasSummaryPanelPr
   );
 
   return (
-    <Card className="rounded-xl sm:rounded-2xl shadow-lg">
+    <Card className="shadow-lg">
       <CardHeader className="p-4 sm:p-6">
         <CardTitle className="text-lg sm:text-xl">Market Bias Summary</CardTitle>
       </CardHeader>

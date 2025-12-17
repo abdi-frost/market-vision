@@ -4,44 +4,15 @@
  */
 
 import { cacheService } from "./cache";
+import type { Candle } from "@/types/analysis";
 
-export interface Candle {
-  datetime: string;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-}
+export type { Candle };
 
-/**
- * Generate mock forex data for development and testing
- */
-function generateMockForexData(symbol: string, outputsize: number = 120): Candle[] {
-  const data: Candle[] = [];
-  const basePrice = symbol.includes("JPY") ? 110.0 : 1.0;
-  const variance = basePrice * 0.01;
-  
-  for (let i = outputsize - 1; i >= 0; i--) {
-    const date = new Date();
-    date.setDate(date.getDate() - i);
-    
-    const randomOpen = basePrice + (Math.random() - 0.5) * variance * 2;
-    const randomChange = (Math.random() - 0.5) * variance;
-    const high = randomOpen + Math.abs(randomChange) * 1.5;
-    const low = randomOpen - Math.abs(randomChange) * 1.5;
-    const close = randomOpen + randomChange;
-    
-    data.push({
-      datetime: date.toISOString().split('T')[0],
-      open: parseFloat(randomOpen.toFixed(5)),
-      high: parseFloat(high.toFixed(5)),
-      low: parseFloat(low.toFixed(5)),
-      close: parseFloat(close.toFixed(5)),
-    });
-  }
-  
-  return data;
-}
+// Phase 1 defaults: always fetch TwelveData candles in NY time (DST-aware), JSON format,
+// and in chronological order. This makes downstream handling consistent.
+const DEFAULT_TIMEZONE = "America/New_York";
+const DEFAULT_FORMAT = "JSON";
+const DEFAULT_ORDER: "asc" | "desc" = "asc";
 
 interface TwelveDataResponse {
   meta: {
@@ -79,36 +50,37 @@ export async function fetchForexData(
   useMockData: boolean = false
 ): Promise<Candle[]> {
   const isProduction = process.env.NODE_ENV === "production";
-  const isDemoKey = apiKey.includes("demo") || apiKey.includes("test");
-  
-  // In development, use mock data if explicitly requested or if using demo/test key
-  if (!isProduction && (useMockData || isDemoKey)) {
-    console.log(`[DEV] Using mock data for ${symbol} with ${outputsize} data points`);
-    return generateMockForexData(symbol, outputsize);
+
+  // Phase 1: pin these parameters for deterministic ingestion behavior.
+  const timezone = DEFAULT_TIMEZONE;
+  const format = DEFAULT_FORMAT;
+  const order = DEFAULT_ORDER;
+
+  // Create cache key based on request parameters.
+  // Include timezone/order/format because they affect the returned dataset ordering.
+  const cacheKey = `forex:${symbol}:${interval}:${outputsize}:${timezone}:${format}:${order}`;
+
+  // Check if data exists in cache
+  const cachedData = cacheService.get<Candle[]>(cacheKey);
+  if (cachedData) {
+    console.log(`Cache hit for ${symbol} (${interval})`);
+    return cachedData;
   }
-// In production with demo key, warn but still try to use the API
-if (isProduction && isDemoKey) {
-  console.warn(`[PROD] Using demo/test API key - data may not be real`);
-}
 
-// Create cache key based on request parameters
-const cacheKey = `forex:${symbol}:${interval}:${outputsize}`;
+  console.log(`Cache miss for ${symbol} (${interval}), fetching from API...`);
 
-// Check if data exists in cache
-const cachedData = cacheService.get<Candle[]>(cacheKey);
-if (cachedData) {
-  console.log(`Cache hit for ${symbol} (${interval})`);
-  return cachedData;
-}
-
-console.log(`Cache miss for ${symbol} (${interval}), fetching from API...`);
-
-const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(
-  symbol
-)}&interval=${interval}&apikey=${apiKey}&outputsize=${outputsize}`;
+  // Build the request using URL + URLSearchParams to avoid encoding/concat bugs.
+  const url = new URL("https://api.twelvedata.com/time_series");
+  url.searchParams.set("symbol", symbol);
+  url.searchParams.set("interval", interval);
+  url.searchParams.set("apikey", apiKey);
+  url.searchParams.set("outputsize", String(outputsize));
+  url.searchParams.set("timezone", timezone);
+  url.searchParams.set("format", format);
+  url.searchParams.set("order", order);
 
   try {
-    const response = await fetch(url, {
+    const response = await fetch(url.toString(), {
       next: { revalidate: 300 }, // Cache for 5 minutes
     });
 
@@ -126,41 +98,30 @@ const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(
       return [];
     }
 
-    // Convert API response to our Candle format
+    // Convert API response to our Candle format.
+    // We request `order=asc` above, so we expect values to already be chronological.
     const formattedData = data.values.map((item) => ({
       datetime: item.datetime,
       open: parseFloat(item.open),
       high: parseFloat(item.high),
       low: parseFloat(item.low),
       close: parseFloat(item.close),
-    })).reverse(); // Reverse to get chronological order
+      volume: item.volume ? parseFloat(item.volume) : undefined,
+    }));
 
     // Store in cache with 5 minute TTL
     cacheService.set(cacheKey, formattedData, 5 * 60 * 1000);
 
     return formattedData;
-} catch (error) {
-  console.error("Error fetching forex data from API:", error);
+  } catch (error) {
+    console.error("Error fetching forex data from API:", error);
 
-  if (isProduction) {
     // In production, don't fallback to mock data - throw the error
     throw new Error(
-      `Failed to fetch data from API: ${
-        error instanceof Error ? error.message : "Unknown error"
+      `Failed to fetch data from API: ${error instanceof Error ? error.message : "Unknown error"
       }`
     );
   }
-
-  // In development, fallback to mock data
-  console.log("[DEV] Falling back to mock data");
-  const mockData = generateMockForexData(symbol, outputsize);
-
-  // Cache mock data for a short time (1 minute) to retry API sooner
-  cacheService.set(cacheKey, mockData, 60 * 1000);
-
-  return mockData;
-}
-
 }
 
 /**

@@ -185,7 +185,7 @@ export function AdvancedChart({
     // Set drawing style
     ctx.strokeStyle = isDarkMode ? "#60a5fa" : "#3b82f6";
     ctx.lineWidth = 2;
-    ctx.fillStyle = isDarkMode ? "rgba(96, 165, 250, 0.1)" : "rgba(59, 130, 246, 0.1)";
+    ctx.fillStyle = isDarkMode ? "rgba(96, 165, 250, 0.15)" : "rgba(59, 130, 246, 0.15)";
 
     // Render saved drawings
     drawings.forEach((drawing) => {
@@ -262,7 +262,7 @@ export function AdvancedChart({
     const chart = createChart(chartContainerRef.current, {
       layout: {
         background: { type: ColorType.Solid, color: isDarkMode ? "#0f172a" : "#ffffff" },
-        textColor: isDarkMode ? "#e2e8f0" : "#1e293b",
+        textColor: isDarkMode ? "#f8fafc" : "#0f172a",
       },
       grid: {
         vertLines: { color: isDarkMode ? "#334155" : "#e2e8f0" },

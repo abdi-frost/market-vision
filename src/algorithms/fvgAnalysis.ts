@@ -3,49 +3,29 @@
  * Based on ICT Smart Money Concepts
  */
 
-export interface Candle {
-  datetime: string;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-}
+import { BIAS_CONFIG } from "@/config";
+import type {
+  Candle,
+  FairValueGap,
+  SwingPoint,
+  LiquidityLevel,
+  MarketBias,
+  MarketStructureAnalysis,
+} from "@/types/analysis";
 
-export interface FairValueGap {
-  start: number;
-  end: number;
-  direction: "bullish" | "bearish";
-  timestamp: string;
-  isFilled: boolean;
-  fillTimestamp?: string;
-}
+// Legacy type alias for backward compatibility
+export type RangeLevel = LiquidityLevel;
 
-export interface SwingPoint {
-  price: number;
-  timestamp: string;
-  type: "high" | "low";
-}
+// Re-export types for backward compatibility
+export type { 
+  Candle,
+  FairValueGap, 
+  SwingPoint, 
+  MarketBias,
+};
 
-export interface RangeLevel {
-  price: number;
-  type: "IRL" | "ERL";
-  side: "buy" | "sell";
-}
-
-export interface MarketBias {
-  bias: "bullish" | "bearish" | "neutral";
-  confidence: number;
-  reason: string;
-}
-
-export interface MarketStructure {
-  fvgs: FairValueGap[];
-  swingHigh: SwingPoint | null;
-  swingLow: SwingPoint | null;
-  irlLevels: RangeLevel[];
-  erlLevels: RangeLevel[];
-  bias: MarketBias;
-}
+// Legacy interface for backward compatibility
+export interface MarketStructure extends MarketStructureAnalysis {}
 
 /**
  * Detect Fair Value Gaps in candlestick data
@@ -239,7 +219,7 @@ export function determineMarketBias(
   }
 
   const latestCandle = candles[candles.length - 1];
-  const recentCandles = candles.slice(-10); // Last 10 candles
+  const recentCandles = candles.slice(BIAS_CONFIG.recentCandleCount); // Last 10 candles
 
   // Count bullish vs bearish candles in recent data
   let bullishCount = 0;
@@ -270,12 +250,12 @@ export function determineMarketBias(
     const currentPosition = (latestCandle.close - swingLow.price) / priceRange;
 
     // If price is in upper 30% and moving up, likely targeting buy-side ERL
-    if (currentPosition > 0.7 && bullishCount > bearishCount) {
+    if (currentPosition > BIAS_CONFIG.liquidityUpperThreshold && bullishCount > bearishCount) {
       targetingExternalBuyLiquidity = true;
     }
 
     // If price is in lower 30% and moving down, likely targeting sell-side ERL
-    if (currentPosition < 0.3 && bearishCount > bullishCount) {
+    if (currentPosition < BIAS_CONFIG.liquidityLowerThreshold && bearishCount > bullishCount) {
       targetingExternalSellLiquidity = true;
     }
   }
@@ -289,7 +269,7 @@ export function determineMarketBias(
     const touchedFVG = recentCandles.some(
       (c) => c.low <= fvg.end && c.low >= fvg.start
     );
-    const reversedUp = recentCandles.slice(-3).every((c) => c.close > c.open);
+    const reversedUp = recentCandles.slice(-BIAS_CONFIG.reversalCheckCount).every((c) => c.close > c.open);
     if (touchedFVG && reversedUp) {
       reactedToBullishFVG = true;
     }
@@ -308,19 +288,19 @@ export function determineMarketBias(
 
   // Determine bias and confidence
   let bias: "bullish" | "bearish" | "neutral" = "neutral";
-  let confidence = 50;
+  let confidence = BIAS_CONFIG.baseConfidence;
   let reason = "No clear directional bias";
 
   // Bullish scenarios
   if (reactedToBullishFVG || (targetingExternalBuyLiquidity && bullishCount > bearishCount)) {
     bias = "bullish";
-    confidence = 70;
+    confidence = BIAS_CONFIG.reactionConfidence;
     reason = reactedToBullishFVG
       ? "Price reacted from bullish FVG, seeking higher levels"
       : "Price targeting external buy-side liquidity";
 
     if (activeBullishFVGs.length > activeBearishFVGs.length) {
-      confidence += 10;
+      confidence += BIAS_CONFIG.extraFVGConfidence;
     }
   }
   // Bearish scenarios
@@ -336,17 +316,17 @@ export function determineMarketBias(
     }
   }
   // General trend-based bias
-  else if (bullishCount > bearishCount * 1.5) {
+  else if (bullishCount > bearishCount * BIAS_CONFIG.momentumMultiplier) {
     bias = "bullish";
     confidence = 60;
     reason = "Recent price action shows bullish momentum";
-  } else if (bearishCount > bullishCount * 1.5) {
+  } else if (bearishCount > bullishCount * BIAS_CONFIG.momentumMultiplier) {
     bias = "bearish";
     confidence = 60;
     reason = "Recent price action shows bearish momentum";
   }
 
-  return { bias, confidence: Math.min(confidence, 95), reason };
+  return { bias, confidence: Math.min(confidence, BIAS_CONFIG.maxConfidence), reason };
 }
 
 /**

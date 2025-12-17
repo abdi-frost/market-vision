@@ -1,0 +1,14 @@
+@baseUrl = http://localhost:3000
+@authToken = SUPER_SECRET_AUTH_TOKEN
+
+### POST /api/cron/update
+POST {{baseUrl}}/api/cron/update
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+
+
+### Optional: verify job updated (GET)
+GET {{baseUrl}}/api/cron/update
+Authorization: Bearer {{authToken}}
+Accept: application/json

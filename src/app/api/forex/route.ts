@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { fetchForexData } from "@/services/twelveData";
+import { successResponse, handleApiError } from "@/lib/api";
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,13 +21,17 @@ export async function GET(request: NextRequest) {
     // Fetch data (with server-side caching)
     const data = await fetchForexData(symbol, interval, apiKey, outputsize);
 
-    const response = NextResponse.json({
-      success: true,
-      symbol,
-      interval,
-      data,
-      usingMockData: !isProduction && isDemoKey,
-    });
+    const response = successResponse(
+      {
+        symbol,
+        interval,
+        data,
+        usingMockData: !isProduction && isDemoKey,
+      },
+      {
+        timestamp: new Date().toISOString(),
+      }
+    );
 
     // Add cache headers for browser caching (5 minutes)
     response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
@@ -34,13 +39,6 @@ export async function GET(request: NextRequest) {
     return response;
   } catch (error) {
     console.error("Failed to fetch forex data:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Failed to fetch forex data",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

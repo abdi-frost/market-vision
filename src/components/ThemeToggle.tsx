@@ -2,7 +2,7 @@
 
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { Moon, Sun, Sparkles } from "lucide-react";
+import { Moon, Sun, Monitor } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function ThemeToggle() {
@@ -21,12 +21,12 @@ export function ThemeToggle() {
   }
 
   const themes = [
-    { value: "light", label: "Light", icon: Sun },
+    { value: "system", label: "System", icon: Monitor },
     { value: "dark", label: "Dark", icon: Moon },
-    { value: "cyber-frost", label: "Cyber Frost", icon: Sparkles },
+    { value: "light", label: "Light", icon: Sun },
   ];
 
-  const currentTheme = themes.find((t) => t.value === theme) || themes[1];
+  const currentTheme = themes.find((t) => t.value === theme) || themes[0];
   const Icon = currentTheme.icon;
 
   return (

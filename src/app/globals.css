@@ -2,36 +2,40 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f172a;
   --card: #ffffff;
-  --card-foreground: #171717;
+  --card-foreground: #0f172a;
   --primary: #0f172a;
   --primary-foreground: #f8fafc;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
   --border: #e2e8f0;
   --accent: #3b82f6;
+  --accent-foreground: #ffffff;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --destructive: #ef4444;
 }
 
 [data-theme="dark"] {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --card: #1a1a1a;
-  --card-foreground: #ededed;
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  --card: #1e293b;
+  --card-foreground: #f8fafc;
   --primary: #f8fafc;
   --primary-foreground: #0f172a;
-  --border: #27272a;
+  --secondary: #1e293b;
+  --secondary-foreground: #f8fafc;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --border: #334155;
   --accent: #60a5fa;
-}
-
-[data-theme="cyber-frost"] {
-  --background: #0a0e1a;
-  --foreground: #e0f2fe;
-  --card: #0f172a;
-  --card-foreground: #e0f2fe;
-  --primary: #00f5ff;
-  --primary-foreground: #0a0e1a;
-  --border: #1e293b;
-  --accent: #00f5ff;
-  --accent-secondary: #9b5eff;
+  --accent-foreground: #0f172a;
+  --success: #22c55e;
+  --warning: #fbbf24;
+  --destructive: #f87171;
 }
 
 @theme inline {
@@ -41,26 +45,15 @@
   --font-mono: var(--font-geist-mono);
 }
 
+* {
+  border-color: var(--border);
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* Cyber Frost theme specific styles */
-[data-theme="cyber-frost"] {
-  background: linear-gradient(135deg, #0a0e1a 0%, #0f172a 100%);
-}
-
-[data-theme="cyber-frost"] .cyber-frost-accent {
-  color: var(--accent);
-  text-shadow: 0 0 10px var(--accent);
-}
-
-[data-theme="cyber-frost"] .cyber-frost-glow {
-  box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
-  border-color: var(--accent);
 }
 
 /* Marquee animation for hot pairs */

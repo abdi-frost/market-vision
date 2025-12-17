@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { fetchOHLCData } from "@/services/marketData";
+import { successResponse, handleApiError } from "@/lib/api";
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,19 +9,17 @@ export async function GET(request: NextRequest) {
 
     const data = await fetchOHLCData();
 
-    return NextResponse.json({
-      success: true,
-      symbol,
-      data,
-    });
+    return successResponse(
+      {
+        symbol,
+        data,
+      },
+      {
+        timestamp: new Date().toISOString(),
+      }
+    );
   } catch (error) {
     console.error("Failed to fetch market data:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Failed to fetch market data",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
