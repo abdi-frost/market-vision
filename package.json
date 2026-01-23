@@ -1,6 +1,7 @@
 {
   "name": "market-vision",
   "version": "0.1.0",
+  "description": "A Next.js TypeScript web application that analyzes financial market data (candlestick OHLC data) and algorithmically predicts whether the next day is likely to be bullish or bearish",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
